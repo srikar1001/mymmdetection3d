@@ -29,7 +29,7 @@ train_cfg = dict(
 
 # dataset settings
 dataset_type = 'KittiDataset'
-data_root = 'data/kitti/'
+data_root = '/data/cmpe295-liu/kitti/'#'data/kitti/'
 class_names = ['Car']
 db_sampler = dict(
     data_root=data_root,

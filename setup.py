@@ -176,7 +176,8 @@ if __name__ == '__main__':
                     # of included files, relative path will cause failure.
                     os.path.abspath(
                         os.path.join(*'mmdet3d.ops.spconv'.split('.'),
-                                     'include/'))
+                                     'include/')),
+                    os.path.abspath('/home/010796032/mycuda/') #new add
                 ],
                 sources=[
                     'src/all.cc',
@@ -198,6 +199,9 @@ if __name__ == '__main__':
             make_cuda_ext(
                 name='voxel_layer',
                 module='mmdet3d.ops.voxel',
+                extra_include_path=[
+                    os.path.abspath('/home/010796032/mycuda/') #new add
+                ],
                 sources=[
                     'src/voxelization.cpp',
                     'src/scatter_points_cpu.cpp',
@@ -219,16 +223,25 @@ if __name__ == '__main__':
             make_cuda_ext(
                 name='ball_query_ext',
                 module='mmdet3d.ops.ball_query',
+                extra_include_path=[
+                    os.path.abspath('/home/010796032/mycuda/') #new add
+                ],
                 sources=['src/ball_query.cpp'],
                 sources_cuda=['src/ball_query_cuda.cu']),
             make_cuda_ext(
                 name='group_points_ext',
                 module='mmdet3d.ops.group_points',
+                extra_include_path=[
+                    os.path.abspath('/home/010796032/mycuda/') #new add
+                ],
                 sources=['src/group_points.cpp'],
                 sources_cuda=['src/group_points_cuda.cu']),
             make_cuda_ext(
                 name='interpolate_ext',
                 module='mmdet3d.ops.interpolate',
+                extra_include_path=[
+                    os.path.abspath('/home/010796032/mycuda/') #new add
+                ],
                 sources=['src/interpolate.cpp'],
                 sources_cuda=[
                     'src/three_interpolate_cuda.cu', 'src/three_nn_cuda.cu'
@@ -236,11 +249,17 @@ if __name__ == '__main__':
             make_cuda_ext(
                 name='furthest_point_sample_ext',
                 module='mmdet3d.ops.furthest_point_sample',
+                extra_include_path=[
+                    os.path.abspath('/home/010796032/mycuda/') #new add
+                ],
                 sources=['src/furthest_point_sample.cpp'],
                 sources_cuda=['src/furthest_point_sample_cuda.cu']),
             make_cuda_ext(
                 name='gather_points_ext',
                 module='mmdet3d.ops.gather_points',
+                extra_include_path=[
+                    os.path.abspath('/home/010796032/mycuda/') #new add
+                ],
                 sources=['src/gather_points.cpp'],
                 sources_cuda=['src/gather_points_cuda.cu'])
         ],
