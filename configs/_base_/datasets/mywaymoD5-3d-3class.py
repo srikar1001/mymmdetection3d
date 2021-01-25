@@ -1,7 +1,7 @@
 # dataset settings
 # D5 in the config name means the whole dataset is divided into 5 folds
 # We only use one fold for efficient experiments
-dataset_type = 'WaymoDataset'
+dataset_type = 'WaymoDataset' #'KittiDataset' #'WaymoDataset'
 data_root = '/data/cmpe249-f20/kitti_format/'
 file_client_args = dict(backend='disk')
 # Uncomment the following if use ceph or other file clients.
@@ -15,7 +15,7 @@ point_cloud_range = [-74.88, -74.88, -2, 74.88, 74.88, 4]
 input_modality = dict(use_lidar=True, use_camera=False)
 db_sampler = dict(
     data_root=data_root,
-    info_path=data_root + 'waymo_dbinfos_train.pkl',
+    info_path=data_root + 'kitti_dbinfos_train.pkl',
     rate=1.0,
     prepare=dict(
         filter_by_difficulty=[-1],
@@ -24,16 +24,18 @@ db_sampler = dict(
     sample_groups=dict(Car=15, Pedestrian=10, Cyclist=10),
     points_loader=dict(
         type='LoadPointsFromFile',
-        load_dim=5,
-        use_dim=[0, 1, 2, 3, 4],
+        coord_type='LIDAR', #new added
+        load_dim=5, #5,
+        #use_dim=[0, 1, 2, 3, 4],
+        use_dim=[0, 1, 2, 3],
         file_client_args=file_client_args))
 
 train_pipeline = [
     dict(
         type='LoadPointsFromFile',
         coord_type='LIDAR',
-        load_dim=6,
-        use_dim=5,
+        load_dim=6, #6, #6,
+        use_dim=4, #5,
         file_client_args=file_client_args),
     dict(
         type='LoadAnnotations3D',
@@ -60,8 +62,8 @@ test_pipeline = [
     dict(
         type='LoadPointsFromFile',
         coord_type='LIDAR',
-        load_dim=6,
-        use_dim=5,
+        load_dim=6, #6,
+        use_dim=4, #5,
         file_client_args=file_client_args),
     dict(
         type='MultiScaleFlipAug3D',
@@ -94,7 +96,7 @@ data = dict(
         dataset=dict(
             type=dataset_type,
             data_root=data_root,
-            ann_file=data_root + 'waymo_infos_train.pkl',
+            ann_file=data_root + 'kitti_infos_train.pkl',
             split='training',
             pipeline=train_pipeline,
             modality=input_modality,
@@ -102,13 +104,14 @@ data = dict(
             test_mode=False,
             # we use box_type_3d='LiDAR' in kitti and nuscenes dataset
             # and box_type_3d='Depth' in sunrgbd and scannet dataset.
-            box_type_3d='LiDAR',
-            # load one frame every five frames
-            load_interval=5)),
+            box_type_3d='LiDAR' #,
+            # load one frame every five frames load_interval=5
+            )
+            ),
     val=dict(
         type=dataset_type,
         data_root=data_root,
-        ann_file=data_root + 'waymo_infos_val.pkl',
+        ann_file=data_root + 'kitti_infos_val.pkl',
         split='training',
         pipeline=test_pipeline,
         modality=input_modality,
@@ -118,7 +121,7 @@ data = dict(
     test=dict(
         type=dataset_type,
         data_root=data_root,
-        ann_file=data_root + 'waymo_infos_val.pkl',
+        ann_file=data_root + 'kitti_infos_val.pkl',
         split='training',
         pipeline=test_pipeline,
         modality=input_modality,
@@ -126,4 +129,5 @@ data = dict(
         test_mode=True,
         box_type_3d='LiDAR'))
 
-evaluation = dict(interval=24)
+#evaluation = dict(interval=24)
+evaluation = dict(interval=5)

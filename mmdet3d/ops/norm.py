@@ -4,6 +4,7 @@ from mmcv.runner import force_fp32
 from torch import distributed as dist
 from torch import nn as nn
 from torch.autograd.function import Function
+#dist.init_process_group('gloo', init_method="file:///d:/tmp/some_file", world_size=-1, rank=-1, store=None)
 
 
 class AllReduce(Function):

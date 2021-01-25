@@ -239,6 +239,7 @@ class Waymo2KITTI(object):
         timestamp = frame.timestamp_micros * np.ones_like(intensity)
 
         # concatenate x,y,z, intensity, elongation, timestamp (6-dim)
+        #Lidar elongation refers to the elongation of the pulse beyond its nominal width
         point_cloud = np.column_stack(
             (points, intensity, elongation, timestamp))
 

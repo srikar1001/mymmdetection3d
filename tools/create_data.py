@@ -21,7 +21,7 @@ def kitti_data_prep(root_path, info_prefix, version, out_dir):
         out_dir (str): Output directory of the groundtruth database info.
     """
     kitti.create_kitti_info_file(root_path, info_prefix)
-    kitti.create_reduced_point_cloud(root_path, info_prefix)
+    kitti.create_reduced_point_cloud(root_path, info_prefix) #cut lidar points that outside of the camera view
     create_groundtruth_database(
         'KittiDataset',
         root_path,
@@ -151,9 +151,11 @@ def waymo_data_prep(root_path,
     """
     from tools.data_converter import waymo_converter as waymo
 
-    splits = ['training', 'validation', 'testing']
+    #splits = ['training', 'validation', 'testing']
+    splits = ['training', 'validation', 'test']
     for i, split in enumerate(splits):
-        load_dir = osp.join(root_path, 'waymo_format', split)
+        #load_dir = osp.join(root_path, 'waymo_format', split)
+        load_dir = osp.join(root_path, split)
         if split == 'validation':
             save_dir = osp.join(out_dir, 'kitti_format', 'training')
         else:
@@ -182,7 +184,7 @@ parser.add_argument('dataset', metavar='kitti', help='name of the dataset')
 parser.add_argument(
     '--root-path',
     type=str,
-    default='./data/kitti',
+    default='/data/cmpe249-f20/Waymo',
     help='specify the root path of dataset')
 parser.add_argument(
     '--version',
@@ -199,15 +201,16 @@ parser.add_argument(
 parser.add_argument(
     '--out-dir',
     type=str,
-    default='./data/kitti',
+    default='/data/cmpe249-f20',
     required='False',
     help='name of info pkl')
 parser.add_argument('--extra-tag', type=str, default='kitti')
 parser.add_argument(
-    '--workers', type=int, default=4, help='number of threads to be used')
+    '--workers', type=int, default=2, help='number of threads to be used')
 args = parser.parse_args()
 
 if __name__ == '__main__':
+    print("Dataset:", args.dataset)
     if args.dataset == 'kitti':
         kitti_data_prep(
             root_path=args.root_path,

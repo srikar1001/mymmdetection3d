@@ -3,6 +3,7 @@ import io as sysio
 import numba
 import numpy as np
 
+GLOBE_CLASS_NAMES = ['car', 'pedestrian', 'cyclist'] #will be updated based on input
 
 @numba.jit
 def get_thresholds(scores: np.ndarray, num_gt, num_sample_pts=41):
@@ -26,7 +27,11 @@ def get_thresholds(scores: np.ndarray, num_gt, num_sample_pts=41):
 
 
 def clean_data(gt_anno, dt_anno, current_class, difficulty):
-    CLASS_NAMES = ['car', 'pedestrian', 'cyclist']
+    #CLASS_NAMES = ['car', 'pedestrian', 'cyclist']
+    #CLASS_NAMES = ['Pedestrian', 'Cyclist', 'Car', 'Truck', 'Misc', 'Van', 'Tram', 'Person_sitting']
+    CLASS_NAMES = GLOBE_CLASS_NAMES #['Car', 'LARGE_VEHICLE', 'ON_ROAD_OBSTACLE', 'PEDESTRIAN', 'OTHER_MOVER', 'BICYCLE', 'TRAILER', 'BICYCLIST', 'BUS', 'ANIMAL', 'STROLLER', 'MOTORCYCLE', 'MOTORCYCLIST', 'EMERGENCY_VEHICLE', 'MOPED']
+    #print('clean_data, lkk, globe class names:', GLOBE_CLASS_NAMES)
+
     MIN_HEIGHT = [40, 25, 25]
     MAX_OCCLUSION = [0, 1, 2]
     MAX_TRUNCATION = [0.15, 0.3, 0.5]
@@ -659,20 +664,48 @@ def kitti_eval(gt_annos,
     assert len(eval_types) > 0, 'must contain at least one evaluation type'
     if 'aos' in eval_types:
         assert 'bbox' in eval_types, 'must evaluate bbox when evaluating aos'
-    overlap_0_7 = np.array([[0.7, 0.5, 0.5, 0.7,
-                             0.5], [0.7, 0.5, 0.5, 0.7, 0.5],
-                            [0.7, 0.5, 0.5, 0.7, 0.5]])
-    overlap_0_5 = np.array([[0.7, 0.5, 0.5, 0.7, 0.5],
-                            [0.5, 0.25, 0.25, 0.5, 0.25],
-                            [0.5, 0.25, 0.25, 0.5, 0.25]])
-    min_overlaps = np.stack([overlap_0_7, overlap_0_5], axis=0)  # [2, 3, 5]
-    class_to_name = {
-        0: 'Car',
-        1: 'Pedestrian',
-        2: 'Cyclist',
-        3: 'Van',
-        4: 'Person_sitting',
-    }
+    
+    global GLOBE_CLASS_NAMES
+    GLOBE_CLASS_NAMES = current_classes 
+    print('kitti_eval, lkk, globe class names:', GLOBE_CLASS_NAMES)
+    if len(current_classes) <6:
+        overlap_0_7 = np.array([[0.7, 0.5, 0.5, 0.7,
+                                0.5], [0.7, 0.5, 0.5, 0.7, 0.5],
+                                [0.7, 0.5, 0.5, 0.7, 0.5]])
+        overlap_0_5 = np.array([[0.7, 0.5, 0.5, 0.7, 0.5],
+                                [0.5, 0.25, 0.25, 0.5, 0.25],
+                                [0.5, 0.25, 0.25, 0.5, 0.25]])
+        min_overlaps = np.stack([overlap_0_7, overlap_0_5], axis=0)  # [2, 3, 5]
+    else:
+        #my new code
+        overlap_0_7_a = [0.7, 0.5, 0.5, 0.7, 0.5] #bbox
+        overlap_0_7_b = [0.7, 0.5, 0.5, 0.7, 0.5] #bev
+        overlap_0_7_c = [0.7, 0.5, 0.5, 0.7, 0.5] #3d
+        extendlen = len(current_classes)- len(overlap_0_7_a)
+        extend_0_7 = np.full(shape=extendlen, fill_value=0.5, dtype=np.float)
+        newoverlap_0_7_a = np.concatenate([overlap_0_7_a, extend_0_7])
+        newoverlap_0_7_b = np.concatenate([overlap_0_7_b, extend_0_7])
+        newoverlap_0_7_c = np.concatenate([overlap_0_7_c, extend_0_7])
+        overlap_0_7 = np.array([newoverlap_0_7_a, newoverlap_0_7_b, newoverlap_0_7_c])
+
+        overlap_0_5_a = [0.7, 0.5, 0.5, 0.7, 0.5] #bbox
+        overlap_0_5_b = [0.5, 0.25, 0.25, 0.5, 0.25] #bbox
+        overlap_0_5_c = [0.5, 0.25, 0.25, 0.5, 0.25] #bbox
+        newoverlap_0_5_a = np.concatenate([overlap_0_5_a, np.full(shape=extendlen, fill_value=0.5, dtype=np.float)])
+        newoverlap_0_5_b = np.concatenate([overlap_0_5_b, np.full(shape=extendlen, fill_value=0.25, dtype=np.float)])
+        newoverlap_0_5_c = np.concatenate([overlap_0_5_c, np.full(shape=extendlen, fill_value=0.25, dtype=np.float)])
+        overlap_0_5 = np.array([newoverlap_0_5_a, newoverlap_0_5_b, newoverlap_0_5_c])
+
+        min_overlaps = np.stack([overlap_0_7, overlap_0_5], axis=0)
+
+    # class_to_name = {
+    #     0: 'Car',
+    #     1: 'Pedestrian',
+    #     2: 'Cyclist',
+    #     3: 'Van',
+    #     4: 'Person_sitting',
+    # }
+    class_to_name =  {i: key for i, key in enumerate(current_classes)}#new add
     name_to_class = {v: n for n, v in class_to_name.items()}
     if not isinstance(current_classes, (list, tuple)):
         current_classes = [current_classes]
@@ -698,8 +731,8 @@ def kitti_eval(gt_annos,
             valid_alpha_gt = True
             break
     compute_aos = (pred_alpha and valid_alpha_gt)
-    if compute_aos:
-        eval_types.append('aos')
+    if compute_aos: #True
+        eval_types.append('aos') #oriented overlap on image (AOS)
 
     mAPbbox, mAPbev, mAP3d, mAPaos = do_eval(gt_annos, dt_annos,
                                              current_classes, min_overlaps,
@@ -784,13 +817,14 @@ def kitti_eval_coco_style(gt_annos, dt_annos, current_classes):
     Returns:
         string: Evaluation results.
     """
-    class_to_name = {
-        0: 'Car',
-        1: 'Pedestrian',
-        2: 'Cyclist',
-        3: 'Van',
-        4: 'Person_sitting',
-    }
+    # class_to_name = {
+    #     0: 'Car',
+    #     1: 'Pedestrian',
+    #     2: 'Cyclist',
+    #     3: 'Van',
+    #     4: 'Person_sitting',
+    # }
+    class_to_name =  {i: key for i, key in enumerate(current_classes)}#new add
     class_to_range = {
         0: [0.5, 0.95, 10],
         1: [0.25, 0.7, 10],

@@ -97,8 +97,10 @@ def main():
     # init distributed env first, since logger depends on the dist info.
     if args.launcher == 'none':
         distributed = False
+        print("Distributed False")
     else:
         distributed = True
+        print("Distributed True")
         init_dist(args.launcher, **cfg.dist_params)
 
     # create work_dir
@@ -152,6 +154,7 @@ def main():
             CLASSES=datasets[0].CLASSES)
     # add an attribute for visualization convenience
     model.CLASSES = datasets[0].CLASSES
+    print("Start training...")
     train_detector(
         model,
         datasets,

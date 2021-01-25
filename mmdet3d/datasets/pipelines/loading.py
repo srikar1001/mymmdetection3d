@@ -365,9 +365,13 @@ class LoadPointsFromFile(object):
                 - points (np.ndarray): Point clouds data.
         """
         pts_filename = results['pts_filename']
+        print("LKK pts_filename:", pts_filename)
         points = self._load_points(pts_filename)
+        print("LKK points.shape:", points.shape)
+        print("LKK use_dim:", self.use_dim)
         points = points.reshape(-1, self.load_dim)
         points = points[:, self.use_dim]
+        print("LKK points after shape:", points.shape)
         attribute_dims = None
 
         if self.shift_height:

@@ -1,45 +1,31 @@
-# dataset settings
-# D5 in the config name means the whole dataset is divided into 5 folds
-# We only use one fold for efficient experiments
+_base_ = [
+    '../_base_/models/hv_second_secfpn_waymo.py',
+    '../_base_/datasets/mywaymoD5-3d-3class.py',
+    '../_base_/schedules/schedule_2x.py',
+    '../_base_/default_runtime.py',
+]
+
 dataset_type = 'WaymoDataset'
 data_root = '/data/cmpe249-f20/kitti_format/'
-file_client_args = dict(backend='disk')
-# Uncomment the following if use ceph or other file clients.
-# See https://mmcv.readthedocs.io/en/latest/api.html#mmcv.fileio.FileClient
-# for more details.
-# file_client_args = dict(
-#     backend='petrel', path_mapping=dict(data='s3://waymo_data/'))
-
 class_names = ['Car', 'Pedestrian', 'Cyclist']
-point_cloud_range = [-74.88, -74.88, -2, 74.88, 74.88, 4]
+point_cloud_range = [-76.8, -51.2, -2, 76.8, 51.2, 4]
 input_modality = dict(use_lidar=True, use_camera=False)
+
 db_sampler = dict(
     data_root=data_root,
-    info_path=data_root + 'waymo_dbinfos_train.pkl',
+    info_path=data_root + 'kitti_dbinfos_train.pkl',
     rate=1.0,
     prepare=dict(
         filter_by_difficulty=[-1],
-        filter_by_min_points=dict(Car=5, Pedestrian=10, Cyclist=10)),
+        filter_by_min_points=dict(Car=5, Pedestrian=5, Cyclist=5)),
     classes=class_names,
     sample_groups=dict(Car=15, Pedestrian=10, Cyclist=10),
     points_loader=dict(
-        type='LoadPointsFromFile',
-        load_dim=5,
-        use_dim=[0, 1, 2, 3, 4],
-        file_client_args=file_client_args))
+        type='LoadPointsFromFile', coord_type='LIDAR', load_dim=5, use_dim=[0, 1, 2, 3, 4]))
 
 train_pipeline = [
-    dict(
-        type='LoadPointsFromFile',
-        coord_type='LIDAR',
-        load_dim=6,
-        use_dim=5,
-        file_client_args=file_client_args),
-    dict(
-        type='LoadAnnotations3D',
-        with_bbox_3d=True,
-        with_label_3d=True,
-        file_client_args=file_client_args),
+    dict(type='LoadPointsFromFile', coord_type='LIDAR', load_dim=6, use_dim=5),
+    dict(type='LoadAnnotations3D', with_bbox_3d=True, with_label_3d=True),
     dict(type='ObjectSample', db_sampler=db_sampler),
     dict(
         type='RandomFlip3D',
@@ -56,13 +42,9 @@ train_pipeline = [
     dict(type='DefaultFormatBundle3D', class_names=class_names),
     dict(type='Collect3D', keys=['points', 'gt_bboxes_3d', 'gt_labels_3d'])
 ]
+
 test_pipeline = [
-    dict(
-        type='LoadPointsFromFile',
-        coord_type='LIDAR',
-        load_dim=6,
-        use_dim=5,
-        file_client_args=file_client_args),
+    dict(type='LoadPointsFromFile', coord_type='LIDAR', load_dim=6, use_dim=5),
     dict(
         type='MultiScaleFlipAug3D',
         img_scale=(1333, 800),
@@ -86,7 +68,7 @@ test_pipeline = [
 ]
 
 data = dict(
-    samples_per_gpu=2,
+    samples_per_gpu=4,
     workers_per_gpu=4,
     train=dict(
         type='RepeatDataset',
@@ -94,7 +76,7 @@ data = dict(
         dataset=dict(
             type=dataset_type,
             data_root=data_root,
-            ann_file=data_root + 'waymo_infos_train.pkl',
+            ann_file=data_root + 'kitti_infos_train.pkl',
             split='training',
             pipeline=train_pipeline,
             modality=input_modality,
@@ -108,7 +90,7 @@ data = dict(
     val=dict(
         type=dataset_type,
         data_root=data_root,
-        ann_file=data_root + 'waymo_infos_val.pkl',
+        ann_file=data_root + 'kitti_infos_val.pkl',
         split='training',
         pipeline=test_pipeline,
         modality=input_modality,
@@ -118,12 +100,10 @@ data = dict(
     test=dict(
         type=dataset_type,
         data_root=data_root,
-        ann_file=data_root + 'waymo_infos_val.pkl',
+        ann_file=data_root + 'kitti_infos_val.pkl',
         split='training',
         pipeline=test_pipeline,
         modality=input_modality,
         classes=class_names,
         test_mode=True,
         box_type_3d='LiDAR'))
-
-evaluation = dict(interval=24)

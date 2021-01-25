@@ -147,6 +147,7 @@ class Custom3DDataset(Dataset):
         input_dict = self.get_data_info(index)
         if input_dict is None:
             return None
+        #print("LKK:", input_dict)
         self.pre_pipeline(input_dict)
         example = self.pipeline(input_dict)
         if self.filter_empty_gt and \
