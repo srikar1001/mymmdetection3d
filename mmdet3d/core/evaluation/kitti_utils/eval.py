@@ -728,7 +728,7 @@ def kitti_eval(gt_annos,
             break
     for anno in gt_annos:
         if (len(anno['alpha'])<1):
-            print("LKK: kitti eval anno:", anno)
+            print("LKK: kitti eval anno:", anno) #solve the kitti evaluation error, out of bound
             break
         if anno['alpha'][0] != -10:
             valid_alpha_gt = True
