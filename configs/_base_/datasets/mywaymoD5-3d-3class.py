@@ -130,4 +130,4 @@ data = dict(
         box_type_3d='LiDAR'))
 
 #evaluation = dict(interval=24)
-evaluation = dict(interval=5)
+evaluation = dict(interval=4) #5

@@ -187,6 +187,10 @@ class WaymoDataset(KittiDataset):
                 KITTI2Waymo  # noqa
             waymo_root = osp.join(
                 self.data_root.split('kitti_format')[0], 'waymo_format')
+            print("LKK: data_root", waymo_root)
+            waymo_root = osp.join('/data/cmpe249-f20', 'Waymo')
+            print("LKK: new data_root", waymo_root)
+            
             if self.split == 'training':
                 waymo_tfrecords_dir = osp.join(waymo_root, 'validation')
                 prefix = '1'
@@ -241,6 +245,7 @@ class WaymoDataset(KittiDataset):
         Returns:
             dict[str: float]: results of each evaluation metric
         """
+        metric='kitti' #LKK add
         assert ('waymo' in metric or 'kitti' in metric), \
             f'invalid metric {metric}'
         if 'kitti' in metric:
@@ -277,7 +282,7 @@ class WaymoDataset(KittiDataset):
                 print_log('\n' + ap_result_str, logger=logger)
         if 'waymo' in metric:
             waymo_root = osp.join(
-                self.data_root.split('kitti_format')[0], 'waymo_format')
+                self.data_root.split('kitti_format')[0], 'kitti_format')#LKK: change waymo_format to kitti_format folder name
             if pklfile_prefix is None:
                 eval_tmp_dir = tempfile.TemporaryDirectory()
                 pklfile_prefix = osp.join(eval_tmp_dir.name, 'results')

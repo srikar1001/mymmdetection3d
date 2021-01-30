@@ -727,6 +727,9 @@ def kitti_eval(gt_annos,
             pred_alpha = True
             break
     for anno in gt_annos:
+        if (len(anno['alpha'])<1):
+            print("LKK: kitti eval anno:", anno)
+            break
         if anno['alpha'][0] != -10:
             valid_alpha_gt = True
             break
