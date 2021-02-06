@@ -7,4 +7,4 @@ _base_ = [
 
 # data settings
 #data = dict(train=dict(dataset=dict(load_interval=1))) # load one frame every ? frames
-total_epochs =60 #40
+total_epochs =80 #40

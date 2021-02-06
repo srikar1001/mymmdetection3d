@@ -86,10 +86,10 @@ class KittiDataset(Custom3DDataset):
         Returns:
             str: Name of the point cloud file.
         """
-        # pts_filename = osp.join(self.root_split, self.pts_prefix,
-        #                         f'{idx:06d}.bin') #LKK: need to remove the 06d, some dataset file name is longer
         pts_filename = osp.join(self.root_split, self.pts_prefix,
-                                f'{idx}.bin')
+                                f'{idx:06d}.bin') #LKK: need to remove the 06d, some dataset file name is longer
+        # pts_filename = osp.join(self.root_split, self.pts_prefix,
+        #                         f'{idx}.bin')
         return pts_filename
 
     def get_data_info(self, index):
