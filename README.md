@@ -1,102 +1,133 @@
-<div align="center">
-  <img src="resources/mmdet3d-logo.png" width="600"/>
-</div>
+# mymmdetection3d
+My fork and modified version of OpenMMLab's mmdetection3d for general 3D object detection.
 
-[![docs](https://img.shields.io/badge/docs-latest-blue)](https://mmdetection3d.readthedocs.io/en/latest/)
-[![badge](https://github.com/open-mmlab/mmdetection3d/workflows/build/badge.svg)](https://github.com/open-mmlab/mmdetection3d/actions)
-[![codecov](https://codecov.io/gh/open-mmlab/mmdetection3d/branch/master/graph/badge.svg)](https://codecov.io/gh/open-mmlab/mmdetection3d)
-[![license](https://img.shields.io/github/license/open-mmlab/mmdetection3d.svg)](https://github.com/open-mmlab/mmdetection3d/blob/master/LICENSE)
+## Install the mymmdetection3d on SJSU HPC
+The original mmdetection3d does not work on SJSU HPC, you need to use our forked version to install mymmdetection3d on SJSU HPC. I changed the setup.py file and add the cublas_v2.h path.
+
+Check how to add multiple class to mmdetection3d: https://mmdetection3d.readthedocs.io/en/stable/index.html, 
+Configure meaning: https://mmdetection3d.readthedocs.io/en/stable/tutorials/config.html?highlight=workers_per_gpu#an-example-of-votenet
 
 
-**News**: We released the codebase v0.9.0.
+## Dataset
 
-In the recent [nuScenes 3D detection challenge](https://www.nuscenes.org/object-detection?externalData=all&mapData=all&modalities=Any) of the 5th AI Driving Olympics in NeurIPS 2020, we obtained the best PKL award and the second runner-up by multi-modality entry, and the best vision-only results. Code and models will be released soon!
+### Kitti dataset conversion and generate infos.pkl
+[create_kitti_info_file](/tools/data_converter/kitti_converter.py) calls [get_kitti_image_info](/tools/data_converter/kitti_data_utils.py) to get kitti_infos_train then calls [_calculate_num_points_in_gt](/tools/data_converter/kitti_data_utils.py)
 
-Documentation: https://mmdetection3d.readthedocs.io/
+The detailed info dictionary generated in kitti_infos_train.pkl is
+info['image']=image_info 
+* image_info['image_path']
+* image_info['image_shape']
+* image_info['image_idx']: idx
+info['point_cloud'] = pc_info
+* pc_info['velodyne_path']
+* pc_info['num_features']= 4
+info['calib'] = calib_info (actual calibration data)
+* calib_info['P0'] = P0
+* calib_info['P1'] = P1
+* calib_info['P2'] = P2
+* calib_info['P3'] = P3
+* calib_info['R0_rect'] = rect_4x4
+* calib_info['Tr_velo_to_cam'] = Tr_velo_to_cam
+* calib_info['Tr_imu_to_velo'] = Tr_imu_to_velo
+info['pose'] actual pose data
+info['annos'] actual annotations
+* annos['num_points_in_gt'] obtained from _calculate_num_points_in_gt
 
-## Introduction
+There are four info .pkl files are created: kitti_infos_test.pkl, kitti_infos_train.pkl, kitti_infos_trainval.pkl, kitti_infos_val.pkl
+ 
+After the info .pkl files, create_groundtruth_database function in [create_gt_database.py](/tools/data_converter/create_gt_database.py) will create kitti_dbinfos_train.pkl, kitti_gt_database folder ({image_idx}_{names[i]}_{i}.bin, e.g., 1196_Car_40.bin, 1012143_Pedestrian_9.bin) and gt.bin (a big file) as the ground truth database
+1. Define dataset_cfg, which contains the data configuration and pipelines: LoadPointsFromFile (load_dim, use_dim), LoadAnnotations3D), then build the dataset
+2. Iterate the dataset: for j in track_iter_progress(list(range(len(dataset)))), the dataset definition is in [class KittiDataset(Custom3DDataset)](/mmdet3d/datasets/kitti_dataset.py)
+3. Save {image_idx}_{names[i]}_{i}.bin file to kitti_gt_database folder
+4. Save the following db_info to all_db_infos list, then save to .pkl file
+```bash
+db_info = {
+      'name': names[i], #used_classes
+      'path': rel_filepath,# relative path for the {image_idx}_{names[i]}_{i}.bin file in kitti_gt_database folder
+      'image_idx': image_idx,
+      'gt_idx': i, #i-th object
+      'box3d_lidar': gt_boxes_3d[i], #from annos['gt_bboxes_3d']
+      'num_points_in_gt': gt_points.shape[0],
+      'difficulty': difficulty[i],
+  }
+```
 
-The master branch works with **PyTorch 1.3 to 1.6**.
+[class KittiDataset(Custom3DDataset)](/mmdet3d/datasets/kitti_dataset.py) is under mmdet3d/datasets and used to register the Dataset. It contains the key functions 
+* get_data_info(self, index): Get data info from the previous info .pkl file according to the given index, it will return a dict as
 
-MMDetection3D is an open source object detection toolbox based on PyTorch, towards the next-generation platform for general 3D detection. It is
-a part of the OpenMMLab project developed by [MMLab](http://mmlab.ie.cuhk.edu.hk/).
+```bash
+input_dict = dict(
+    sample_idx=sample_idx, #info['image']['image_idx']
+    pts_filename=pts_filename, #self._get_pts_filename(sample_idx)
+    img_prefix=None,
+    img_info=dict(filename=img_filename), #info['image']['image_path']
+    lidar2img=lidar2img) #Transformations
+```
 
-![demo image](resources/mmdet3d_outdoor_demo.gif)
+### Waymo dataset conversion and generate infos.pkl
+[class Waymo2KITTI](/tools/data_converter/waymo_converter.py) converts the Waymo dataset to Kitti format. [myconvert_waymo2kitti.py](/tools/myconvert_waymo2kitti.py) used [class Waymo2KITTI](/tools/data_converter/waymo_converter.py) to convert the waymo dataset and create the info (.pkl) files
+* [def create_waymo_info_file](/tools/data_converter/kitti_converter.py) create info file of waymo dataset, it mainly calls [get_waymo_image_info](/tools/data_converter/kitti_data_utils.py) and [_calculate_num_points_in_gt](/tools/data_converter/kitti_data_utils.py) in kitti_data_utils.py
+* [get_waymo_image_info](/tools/data_converter/kitti_data_utils.py) creates info dictionary for each idx, return waymo_infos_train is a list for idx, each idx element is a info dictionary data for all data
+file save to waymo_infos_train.pkl
+* [_calculate_num_points_in_gt](/tools/data_converter/kitti_data_utils.py) used information in the info dictionary and get velodyne points. It can box_np_ops.remove_outside_points and obtain 3D bounding box in the Velodyne coordinate via gt_boxes_lidar = box_np_ops.box_camera_to_lidar(gt_boxes_camera, rect, Trv2c). Finally, it gets annos['num_points_in_gt']
 
-### Major features
+The detailed info dictionary generated in waymo_infos_train.pkl is
+info['image']=image_info 
+* image_info['image_path']
+* image_info['image_shape']
+* image_info['image_idx']: idx
+info['point_cloud'] = pc_info
+* pc_info['velodyne_path']
+* pc_info['num_features']= 6
+info['timestamp'] # get it from the last line of velodyne (not available in our conversion)
+info['calib'] = calib_info (actual calibration data)
+* calib_info['P0'] = P0
+* calib_info['P1'] = P1
+* calib_info['P2'] = P2
+* calib_info['P3'] = P3
+* calib_info['P4'] = P4
+* calib_info['R0_rect'] = rect_4x4
+* calib_info['Tr_velo_to_cam'] = Tr_velo_to_cam
+info['pose'] actual pose data
+info['annos'] actual annotations
+info['annos']['camera_id']
+* annos['num_points_in_gt'] obtained from _calculate_num_points_in_gt
+info['sweeps'] previous multiple velodyne path
 
-- **Support multi-modality/single-modality detectors out of box**
+After the info .pkl files, create_groundtruth_database function in [create_gt_database.py](/tools/data_converter/create_gt_database.py) will create waymo_dbinfos_train.pkl, waymo_gt_database folder ({image_idx}_{names[i]}_{i}.bin, e.g., 1196_Car_40.bin, 1012143_Pedestrian_9.bin) and gt.bin (a big file) as the ground truth database
+* Define dataset_cfg, which contains the data configuration and pipelines: LoadPointsFromFile (load_dim, use_dim), LoadAnnotations3D)
 
-  It directly supports multi-modality/single-modality detectors including MVXNet, VoteNet, PointPillars, etc.
 
-- **Support indoor/outdoor 3D detection out of box**
+### Training
+#### Kitti Training
+Use the following code to start the training via the configuration file (hv_pointpillars_secfpn_6x8_160e_kitti-3d-car.py):
+```bash
+(venvpy37cu10) [010796032@g8 mymmdetection3d]$ python tools/train.py configs/pointpillars/hv_pointpillars_secfpn_6x8_160e_kitti-3d-car.py --work-dir ./mypointpillar_kitticar/
+```
+The evaluation results is:
+Car AP@0.70, 0.70, 0.70:
+bbox AP:98.5525, 90.6131, 89.9877
+bev  AP:98.2510, 90.1967, 89.3395
+3d   AP:90.2396, 87.9322, 79.6033
+aos  AP:98.39, 90.22, 89.38
+Car AP@0.70, 0.50, 0.50:
+bbox AP:98.5525, 90.6131, 89.9877
+bev  AP:98.8110, 90.7028, 90.1898
+3d   AP:98.7234, 90.6936, 90.1576
+aos  AP:98.39, 90.22, 89.38
 
-  It directly supports popular indoor and outdoor 3D detection datasets, including ScanNet, SUNRGB-D, Waymo, nuScenes, Lyft, and KITTI.
-  For nuScenes dataset, we also support [nuImages dataset](https://github.com/open-mmlab/mmdetection3d/tree/master/configs/nuimages).
+2021-01-15 19:46:33,686 - mmdet - INFO - Epoch(val) [80][2992]  KITTI/Car_3D_easy_strict: 90.2396, KITTI/Car_BEV_easy_strict: 98.2510, KITTI/Car_2D_easy_strict: 98.5525, KITTI/Car_3D_moderate_strict: 87.9322, KITTI/Car_BEV_moderate_strict: 90.1967, KITTI/Car_2D_moderate_strict: 90.6131, KITTI/Car_3D_hard_strict: 79.6033, KITTI/Car_BEV_hard_strict: 89.3395, KITTI/Car_2D_hard_strict: 89.9877, KITTI/Car_3D_easy_loose: 98.7234, KITTI/Car_BEV_easy_loose: 98.8110, KITTI/Car_2D_easy_loose: 98.5525, KITTI/Car_3D_moderate_loose: 90.6936, KITTI/Car_BEV_moderate_loose: 90.7028, KITTI/Car_2D_moderate_loose: 90.6131, KITTI/Car_3D_hard_loose: 90.1576, KITTI/Car_BEV_hard_loose: 90.1898, KITTI/Car_2D_hard_loose: 89.9877
 
-- **Natural integration with 2D detection**
 
-  All the about **50+ methods, 300+ models**, and modules supported in [MMDetection](https://github.com/open-mmlab/mmdetection/blob/master/docs/model_zoo.md) can be trained or used in this codebase.
+### Inference
+In mmdet3d/core/visualizer/show_results.py, _write_ply will write points into ``ply`` format for meshlab visualization
 
-- **High efficiency**
+The predicted results via model from model zoo:
 
-  It trains faster than other codebases. The main results are as below. Details can be found in [benchmark.md](./docs/benchmarks.md). We compare the number of samples trained per second (the higher, the better). The models that are not supported by other codebases are marked by `×`.
+![image](https://user-images.githubusercontent.com/6676586/111930963-64b11400-8a77-11eb-93d2-221321687014.png)
 
-  | Methods | MMDetection3D | [OpenPCDet](https://github.com/open-mmlab/OpenPCDet) |[votenet](https://github.com/facebookresearch/votenet)| [Det3D](https://github.com/poodarchu/Det3D) |
-  |:-------:|:-------------:|:---------:|:-----:|:-----:|
-  | VoteNet | 358           | ×         |   77  | ×     |
-  | PointPillars-car| 141           | ×         |   ×  | 140     |
-  | PointPillars-3class| 107           |44     |   ×      | ×    |
-  | SECOND| 40           |30     |   ×      | ×    |
-  | Part-A2| 17           |14     |   ×      | ×    |
+The predicted results via our own trained model:
 
-Like [MMDetection](https://github.com/open-mmlab/mmdetection) and [MMCV](https://github.com/open-mmlab/mmcv), MMDetection3D can also be used as a library to support different projects on top of it.
+![image](https://user-images.githubusercontent.com/6676586/111930977-71356c80-8a77-11eb-9937-55834b83e46b.png)
 
-## License
 
-This project is released under the [Apache 2.0 license](LICENSE).
-
-## Changelog
-
-v0.9.0 was released in 31/12/2020.
-Please refer to [changelog.md](docs/changelog.md) for details and release history.
-
-## Benchmark and model zoo
-
-Supported methods and backbones are shown in the below table.
-Results and models are available in the [model zoo](docs/model_zoo.md).
-
-|                    | ResNet   | ResNeXt  | SENet    |PointNet++ | HRNet | RegNetX | Res2Net |
-|--------------------|:--------:|:--------:|:--------:|:---------:|:-----:|:--------:|:-----:|
-| SECOND             | ☐        | ☐        | ☐        | ✗         | ☐     | ✓        | ☐     |
-| PointPillars       | ☐        | ☐        | ☐        | ✗         | ☐     | ✓        | ☐     |
-| FreeAnchor         | ☐        | ☐        | ☐        | ✗         | ☐     | ✓        | ☐     |
-| VoteNet            | ✗        | ✗        | ✗        | ✓         | ✗     | ✗        | ✗     |
-| H3DNet            | ✗        | ✗        | ✗        | ✓         | ✗     | ✗        | ✗     |
-| 3DSSD            | ✗        | ✗        | ✗        | ✓         | ✗     | ✗        | ✗     |
-| Part-A2            | ☐        | ☐        | ☐        | ✗         | ☐     | ✓        | ☐     |
-| MVXNet             | ☐        | ☐        | ☐        | ✗         | ☐     | ✓        | ☐     |
-| CenterPoint        | ☐        | ☐        | ☐        | ✗         | ☐     | ✓        | ☐     |
-| SSN                | ☐        | ☐        | ☐        | ✗         | ☐     | ✓        | ☐     |
-
-Other features
-- [x] [Dynamic Voxelization](configs/carafe/README.md)
-
-**Note:** All the about **300 models, methods of 40+ papers** in 2D detection supported by [MMDetection](https://github.com/open-mmlab/mmdetection/blob/master/docs/model_zoo.md) can be trained or used in this codebase.
-
-## Installation
-
-Please refer to [getting_started.md](docs/getting_started.md) for installation.
-
-## Get Started
-
-Please see [getting_started.md](docs/getting_started.md) for the basic usage of MMDetection3D. We provide guidance for quick run [with existing dataset](docs/1_exist_data_model.md) and [with customized dataset](docs/2_new_data_model.md) for beginners. There are also tutorials for [learning configuration systems](docs/tutorials/config.md), [adding new dataset](docs/tutorials/customize_dataset.md), [designing data pipeline](docs/tutorials/data_pipeline.md), [customizing models](docs/tutorials/customize_models.md), [customizing runtime settings](docs/tutorials/customize_runtime.md) and [waymo dataset](docs/tutorials/waymo.md).
-
-## Contributing
-
-We appreciate all contributions to improve MMDetection3D. Please refer to [CONTRIBUTING.md](.github/CONTRIBUTING.md) for the contributing guideline.
-
-## Acknowledgement
-
-MMDetection3D is an open source project that is contributed by researchers and engineers from various colleges and companies. We appreciate all the contributors as well as users who give valuable feedbacks.
-We wish that the toolbox and benchmark could serve the growing research community by providing a flexible toolkit to reimplement existing methods and develop their own new 3D detectors.
