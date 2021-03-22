@@ -2,7 +2,11 @@
 My fork and modified version of OpenMMLab's mmdetection3d for general 3D object detection.
 
 ## Install the mymmdetection3d on SJSU HPC
-The original mmdetection3d does not work on SJSU HPC, you need to use our forked version to install mymmdetection3d on SJSU HPC
+The original mmdetection3d does not work on SJSU HPC, you need to use our forked version to install mymmdetection3d on SJSU HPC. I changed the setup.py file and add the cublas_v2.h path.
+
+Check how to add multiple class to mmdetection3d: https://mmdetection3d.readthedocs.io/en/stable/index.html, 
+Configure meaning: https://mmdetection3d.readthedocs.io/en/stable/tutorials/config.html?highlight=workers_per_gpu#an-example-of-votenet
+
 
 ## Dataset
 
@@ -92,3 +96,38 @@ info['sweeps'] previous multiple velodyne path
 
 After the info .pkl files, create_groundtruth_database function in [create_gt_database.py](/tools/data_converter/create_gt_database.py) will create waymo_dbinfos_train.pkl, waymo_gt_database folder ({image_idx}_{names[i]}_{i}.bin, e.g., 1196_Car_40.bin, 1012143_Pedestrian_9.bin) and gt.bin (a big file) as the ground truth database
 * Define dataset_cfg, which contains the data configuration and pipelines: LoadPointsFromFile (load_dim, use_dim), LoadAnnotations3D)
+
+
+### Training
+#### Kitti Training
+Use the following code to start the training via the configuration file (hv_pointpillars_secfpn_6x8_160e_kitti-3d-car.py):
+```bash
+(venvpy37cu10) [010796032@g8 mymmdetection3d]$ python tools/train.py configs/pointpillars/hv_pointpillars_secfpn_6x8_160e_kitti-3d-car.py --work-dir ./mypointpillar_kitticar/
+```
+The evaluation results is:
+Car AP@0.70, 0.70, 0.70:
+bbox AP:98.5525, 90.6131, 89.9877
+bev  AP:98.2510, 90.1967, 89.3395
+3d   AP:90.2396, 87.9322, 79.6033
+aos  AP:98.39, 90.22, 89.38
+Car AP@0.70, 0.50, 0.50:
+bbox AP:98.5525, 90.6131, 89.9877
+bev  AP:98.8110, 90.7028, 90.1898
+3d   AP:98.7234, 90.6936, 90.1576
+aos  AP:98.39, 90.22, 89.38
+
+2021-01-15 19:46:33,686 - mmdet - INFO - Epoch(val) [80][2992]  KITTI/Car_3D_easy_strict: 90.2396, KITTI/Car_BEV_easy_strict: 98.2510, KITTI/Car_2D_easy_strict: 98.5525, KITTI/Car_3D_moderate_strict: 87.9322, KITTI/Car_BEV_moderate_strict: 90.1967, KITTI/Car_2D_moderate_strict: 90.6131, KITTI/Car_3D_hard_strict: 79.6033, KITTI/Car_BEV_hard_strict: 89.3395, KITTI/Car_2D_hard_strict: 89.9877, KITTI/Car_3D_easy_loose: 98.7234, KITTI/Car_BEV_easy_loose: 98.8110, KITTI/Car_2D_easy_loose: 98.5525, KITTI/Car_3D_moderate_loose: 90.6936, KITTI/Car_BEV_moderate_loose: 90.7028, KITTI/Car_2D_moderate_loose: 90.6131, KITTI/Car_3D_hard_loose: 90.1576, KITTI/Car_BEV_hard_loose: 90.1898, KITTI/Car_2D_hard_loose: 89.9877
+
+
+### Inference
+In mmdet3d/core/visualizer/show_results.py, _write_ply will write points into ``ply`` format for meshlab visualization
+
+The predicted results via model from model zoo:
+
+![image](https://user-images.githubusercontent.com/6676586/111930963-64b11400-8a77-11eb-93d2-221321687014.png)
+
+The predicted results via our own trained model:
+
+![image](https://user-images.githubusercontent.com/6676586/111930977-71356c80-8a77-11eb-9937-55834b83e46b.png)
+
+
