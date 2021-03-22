@@ -76,6 +76,7 @@ class KittiDataset(Custom3DDataset):
         assert self.modality is not None
         self.pcd_limit_range = pcd_limit_range
         self.pts_prefix = pts_prefix
+        print("Init Kitti Dataset:, self.root_split:", self.root_split)
 
     def _get_pts_filename(self, idx):
         """Get point cloud filename according to the given index.
@@ -88,6 +89,9 @@ class KittiDataset(Custom3DDataset):
         """
         pts_filename = osp.join(self.root_split, self.pts_prefix,
                                 f'{idx:06d}.bin') #LKK: need to remove the 06d, some dataset file name is longer
+        # print("pts_filename:",pts_filename)
+        # print("root_split:", self.root_split)
+        # print("pts_prefix:", self.pts_prefix)
         # pts_filename = osp.join(self.root_split, self.pts_prefix,
         #                         f'{idx}.bin')
         return pts_filename

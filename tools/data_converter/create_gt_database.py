@@ -237,6 +237,7 @@ def create_groundtruth_database(dataset_class_name,
         dataset.pre_pipeline(input_dict)
         example = dataset.pipeline(input_dict)
         annos = example['ann_info']
+        #print(annos)
         image_idx = example['sample_idx']
         points = example['points'].tensor.numpy()
         gt_boxes_3d = annos['gt_bboxes_3d'].tensor.numpy()

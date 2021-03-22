@@ -141,36 +141,32 @@ parser.add_argument(
     required='False',
     help='name of info pkl')
 parser.add_argument(
+        '--createsplitfile_only',
+        action='store_true',
+        help='create train val split files')
+parser.add_argument(
         '--createinfo_only',
         action='store_true',
-        help='only create info files')
-parser.add_argument(
-        '--creategtdb_only',
-        action='store_true',
-        help='only create ground truth files')
-parser.add_argument('--extra-tag', type=str, default='waymo')
+        help='create info files')
+parser.add_argument('--extra-tag', type=str, default='kitti')
 parser.add_argument(
     '--workers', type=int, default=2, help='number of threads to be used')
 args = parser.parse_args()
 
 if __name__ == '__main__':
     print("Dataset:", args.dataset)
-    #if args.dataset == 'waymo':
-    if args.createinfo_only:
+    if args.createsplitfile_only:
+        create_trainvaltestsplitfile(args.out_dir)
+    else:
         createwaymo_info(args.root_path, args.extra_tag, args.out_dir, args.workers)
-    # else:
-    #     waymo_data_prep(
-    #         root_path=args.root_path,
-    #         info_prefix=args.extra_tag,
-    #         version=args.version,
-    #         out_dir=args.out_dir,
-    #         workers=args.workers,
-    #         max_sweeps=args.max_sweeps)
-    if args.creategtdb_only:
-        create_groundtruth_database(
-            'KittiDataset', #'WaymoDataset',
-            args.out_dir,
-            args.extra_tag,
-            f'{args.out_dir}/{args.extra_tag}_infos_train.pkl',
-            relative_path=False,#not used
-            with_mask=False)
+        
+    # if args.dataset == 'waymo':
+    #     if args.createinfo_only:
+    #         else:
+    #         waymo_data_prep(
+    #             root_path=args.root_path,
+    #             info_prefix=args.extra_tag,
+    #             version=args.version,
+    #             out_dir=args.out_dir,
+    #             workers=args.workers,
+    #             max_sweeps=args.max_sweeps)
