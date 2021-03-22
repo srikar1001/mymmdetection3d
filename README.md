@@ -105,19 +105,53 @@ Use the following code to start the training via the configuration file (hv_poin
 (venvpy37cu10) [010796032@g8 mymmdetection3d]$ python tools/train.py configs/pointpillars/hv_pointpillars_secfpn_6x8_160e_kitti-3d-car.py --work-dir ./mypointpillar_kitticar/
 ```
 The evaluation results is:
-Car AP@0.70, 0.70, 0.70:
-bbox AP:98.5525, 90.6131, 89.9877
-bev  AP:98.2510, 90.1967, 89.3395
-3d   AP:90.2396, 87.9322, 79.6033
-aos  AP:98.39, 90.22, 89.38
-Car AP@0.70, 0.50, 0.50:
-bbox AP:98.5525, 90.6131, 89.9877
-bev  AP:98.8110, 90.7028, 90.1898
-3d   AP:98.7234, 90.6936, 90.1576
-aos  AP:98.39, 90.22, 89.38
+![image](https://user-images.githubusercontent.com/6676586/111931135-ccfff580-8a77-11eb-9262-8935c5897591.png)
 
 2021-01-15 19:46:33,686 - mmdet - INFO - Epoch(val) [80][2992]  KITTI/Car_3D_easy_strict: 90.2396, KITTI/Car_BEV_easy_strict: 98.2510, KITTI/Car_2D_easy_strict: 98.5525, KITTI/Car_3D_moderate_strict: 87.9322, KITTI/Car_BEV_moderate_strict: 90.1967, KITTI/Car_2D_moderate_strict: 90.6131, KITTI/Car_3D_hard_strict: 79.6033, KITTI/Car_BEV_hard_strict: 89.3395, KITTI/Car_2D_hard_strict: 89.9877, KITTI/Car_3D_easy_loose: 98.7234, KITTI/Car_BEV_easy_loose: 98.8110, KITTI/Car_2D_easy_loose: 98.5525, KITTI/Car_3D_moderate_loose: 90.6936, KITTI/Car_BEV_moderate_loose: 90.7028, KITTI/Car_2D_moderate_loose: 90.6131, KITTI/Car_3D_hard_loose: 90.1576, KITTI/Car_BEV_hard_loose: 90.1898, KITTI/Car_2D_hard_loose: 89.9877
 
+#### Waymo Training
+First create info .pkl and groundtruth files
+```bash
+(venvpy37cu10) [010796032@g7 mymmdetection3d]$ python tools/myconvert_waymo2kitti.py --createinfo_only waymo --root-path '/data/cmpe249-f20/Waymo' --out-dir '/data/cmpe249-f20/'
+```
+![image](https://user-images.githubusercontent.com/6676586/111931299-2cf69c00-8a78-11eb-91f8-1ae24e76dbb4.png)
+
+Start the training:
+```bash
+(venvpy37cu10) [010796032@g6 mymmdetection3d]$ cp /data/cmpe249-f20/Waymo_kittiformat/validation_ground_truth_objects_gt.bin /data/cmpe249-f20/kitti_format/gt.bin
+
+(venvpy37cu10) [010796032@g8 mymmdetection3d]$ python tools/train.py configs/pointpillars/myhv_pointpillars_secfpn_sbn_2x16_2x_waymo-3d-3class.py --work-dir ./mypointpillar_waymothree/
+
+(venvpy37cu10) [010796032@g6 mymmdetection3d]$ python tools/train.py configs/pointpillars/myhv_pointpillars_secfpn_sbn_2x16_2x_waymo-3d-3class.py --work-dir ./mypointpillar_waymothree/ --resume-from ./mypointpillar_waymothree/epoch_25.pth
+```
+
+Using our new converted data (the same format to Kitti), using the following code to create groundtruth and start the training:
+```bash
+(venvpy37cu10) [010796032@g6 mymmdetection3d]$ python tools/myconvert_waymo2kitti.py --root-path '/data/cmpe249-f20/WaymoKittitMulti/train0001' --out-dir '/data/cmpe249-f20/WaymoKittitMulti/train0001' --creategtdb_only kitti
+
+Create GT Database of KittiDataset
+Init Kitti Dataset:, self.root_split: /data/cmpe249-f20/WaymoKittitMulti/train0001/training
+[>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>] 3808/3808, 3.1 task/s, elapsed: 1229s, ETA:     0s
+load 109959 Car database infos
+load 1270 Cyclist database infos
+load 49147 Pedestrian database infos
+
+(venvpy37cu10) [010796032@g1 mymmdetection3d]$ python tools/train.py configs/pointpillars/myhv_pointpillars_secfpn_6x8_160e_waymokitti-3d-3class.py --work-dir ./mypointpillar_waymokitti/
+
+2021-03-21 23:24:33,525 - mmdet - INFO - load 109959 Car database infos
+2021-03-21 23:24:33,525 - mmdet - INFO - load 1270 Cyclist database infos
+2021-03-21 23:24:33,526 - mmdet - INFO - load 49147 Pedestrian database infos
+2021-03-21 23:24:33,853 - mmdet - INFO - After filter database:
+2021-03-21 23:24:33,866 - mmdet - INFO - load 90608 Car database infos
+2021-03-21 23:24:33,866 - mmdet - INFO - load 830 Cyclist database infos
+2021-03-21 23:24:33,867 - mmdet - INFO - load 29998 Pedestrian database infos
+Init Kitti Dataset:, self.root_split: /data/cmpe249-f20/WaymoKittitMulti/train0001/training
+```
+
+If you want to resume from the previous training, you can use
+```bash
+$ python tools/train.py configs/pointpillars/myhv_pointpillars_secfpn_6x8_160e_waymokitti-3d-3class.py --work-dir ./mypointpillar_waymokitti/ --resume-from ./mypointpillar_waymothree/epoch_2.pth
+```
 
 ### Inference
 In mmdet3d/core/visualizer/show_results.py, _write_ply will write points into ``ply`` format for meshlab visualization
