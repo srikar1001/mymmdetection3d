@@ -124,8 +124,9 @@ Start the training:
 
 (venvpy37cu10) [010796032@g6 mymmdetection3d]$ python tools/train.py configs/pointpillars/myhv_pointpillars_secfpn_sbn_2x16_2x_waymo-3d-3class.py --work-dir ./mypointpillar_waymothree/ --resume-from ./mypointpillar_waymothree/epoch_25.pth
 ```
+When using Waymo dataset, the original mmdetection3d converted the index file (e.g., 0000000.bin) has 7 digits (first digit is the prefix for training/val), this is implemented in the "def _get_pts_filename" dataset in [class WaymoDataset(KittiDataset)](/mmdet3d/datasets/waymo_dataset.py).
 
-Using our new converted data (the same format to Kitti), using the following code to create groundtruth and start the training:
+Using our new converted data (the same format to Kitti, 6 digits), using the following code to create groundtruth and start the training (the dataset name just name to kitti):
 ```bash
 (venvpy37cu10) [010796032@g6 mymmdetection3d]$ python tools/myconvert_waymo2kitti.py --root-path '/data/cmpe249-f20/WaymoKittitMulti/train0001' --out-dir '/data/cmpe249-f20/WaymoKittitMulti/train0001' --creategtdb_only kitti
 
@@ -152,6 +153,9 @@ If you want to resume from the previous training, you can use
 ```bash
 $ python tools/train.py configs/pointpillars/myhv_pointpillars_secfpn_6x8_160e_waymokitti-3d-3class.py --work-dir ./mypointpillar_waymokitti/ --resume-from ./mypointpillar_waymothree/epoch_2.pth
 ```
+
+### Evaluation
+You can use Kitti evaluation or Waymo evaluation. To manually change the evaluation approaches, you can change the "metric" valuate in the "def evaluate" function located in [class WaymoDataset(KittiDataset)](/mmdet3d/datasets/waymo_dataset.py). 
 
 ### Inference
 In mmdet3d/core/visualizer/show_results.py, _write_ply will write points into ``ply`` format for meshlab visualization
