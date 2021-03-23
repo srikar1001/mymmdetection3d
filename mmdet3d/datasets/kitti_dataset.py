@@ -47,7 +47,7 @@ class KittiDataset(Custom3DDataset):
         pcd_limit_range (list): The range of point cloud used to filter
             invalid predicted boxes. Default: [0, -40, -3, 70.4, 40, 0.0].
     """
-    CLASSES = ('car', 'pedestrian', 'cyclist')
+    #CLASSES = ('car', 'pedestrian', 'cyclist')
 
     def __init__(self,
                  data_root,
@@ -76,7 +76,9 @@ class KittiDataset(Custom3DDataset):
         assert self.modality is not None
         self.pcd_limit_range = pcd_limit_range
         self.pts_prefix = pts_prefix
+        self.CLASSES = classes #LKK: newa add
         print("Init Kitti Dataset:, self.root_split:", self.root_split)
+        print("Kitti Classes::", self.CLASSES)
 
     def _get_pts_filename(self, idx):
         """Get point cloud filename according to the given index.

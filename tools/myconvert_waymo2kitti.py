@@ -1,7 +1,8 @@
 import argparse
 from os import path as osp
 from tools.data_converter import waymo_converter as waymo
-from tools.data_converter.create_gt_database import create_groundtruth_database
+#from tools.data_converter.create_gt_database import create_groundtruth_database
+from tools.data_converter.mycreate_gt_database import create_groundtruth_database
 from tools.data_converter import kitti_converter as kitti
 
 import pandas as pd
@@ -155,6 +156,7 @@ args = parser.parse_args()
 
 if __name__ == '__main__':
     print("Dataset:", args.dataset)
+    class_names = ['Pedestrian', 'Cyclist', 'Car', 'Sign']
     #if args.dataset == 'waymo':
     if args.createinfo_only:
         createwaymo_info(args.root_path, args.extra_tag, args.out_dir, args.workers)
@@ -167,10 +169,18 @@ if __name__ == '__main__':
     #         workers=args.workers,
     #         max_sweeps=args.max_sweeps)
     if args.creategtdb_only:
+        # create_groundtruth_database(
+        #     'KittiDataset', #'WaymoDataset',
+        #     args.out_dir,
+        #     args.extra_tag,
+        #     f'{args.out_dir}/{args.extra_tag}_infos_train.pkl',
+        #     relative_path=False,#not used
+        #     with_mask=False)
         create_groundtruth_database(
-            'KittiDataset', #'WaymoDataset',
+            'MyWaymoKittiDataset', #'KittiDataset', #'WaymoDataset',
             args.out_dir,
             args.extra_tag,
             f'{args.out_dir}/{args.extra_tag}_infos_train.pkl',
+            used_classes=class_names,
             relative_path=False,#not used
             with_mask=False)
