@@ -83,13 +83,13 @@ class WaymoDataset(KittiDataset):
             self.flag = self.flag[::load_interval]
 
     def _get_pts_filename(self, idx):
-        # pts_filename = osp.join(self.root_split, self.pts_prefix,
-        #                         f'{idx:07d}.bin')
         pts_filename = osp.join(self.root_split, self.pts_prefix,
-                                f'{idx:06d}.bin')
-        print("waymo dataset pts_filename:",pts_filename)
-        print("waymo dataset root_split:", self.root_split)
-        print("waymo dataset pts_prefix:", self.pts_prefix)
+                                f'{idx:07d}.bin')
+        # pts_filename = osp.join(self.root_split, self.pts_prefix,
+        #                         f'{idx:06d}.bin')
+        # print("waymo dataset pts_filename:",pts_filename)
+        # print("waymo dataset root_split:", self.root_split)
+        # print("waymo dataset pts_prefix:", self.pts_prefix)
         return pts_filename
 
     def get_data_info(self, index):
