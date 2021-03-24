@@ -110,11 +110,27 @@ The evaluation results is:
 2021-01-15 19:46:33,686 - mmdet - INFO - Epoch(val) [80][2992]  KITTI/Car_3D_easy_strict: 90.2396, KITTI/Car_BEV_easy_strict: 98.2510, KITTI/Car_2D_easy_strict: 98.5525, KITTI/Car_3D_moderate_strict: 87.9322, KITTI/Car_BEV_moderate_strict: 90.1967, KITTI/Car_2D_moderate_strict: 90.6131, KITTI/Car_3D_hard_strict: 79.6033, KITTI/Car_BEV_hard_strict: 89.3395, KITTI/Car_2D_hard_strict: 89.9877, KITTI/Car_3D_easy_loose: 98.7234, KITTI/Car_BEV_easy_loose: 98.8110, KITTI/Car_2D_easy_loose: 98.5525, KITTI/Car_3D_moderate_loose: 90.6936, KITTI/Car_BEV_moderate_loose: 90.7028, KITTI/Car_2D_moderate_loose: 90.6131, KITTI/Car_3D_hard_loose: 90.1576, KITTI/Car_BEV_hard_loose: 90.1898, KITTI/Car_2D_hard_loose: 89.9877
 
 #### Waymo Training
-First create info .pkl and groundtruth files
+Based on the generated info.pkl files, we need to generate groundtruth files
 ```bash
-(venvpy37cu10) [010796032@g7 mymmdetection3d]$ python tools/myconvert_waymo2kitti.py --createinfo_only waymo --root-path '/data/cmpe249-f20/Waymo' --out-dir '/data/cmpe249-f20/'
+(venvpy37cu10) [010796032@g5 mymmdetection3d]$ python tools/myconvert_waymo2kitti.py --root-path '/data/cmpe249-f20/WaymoKittitMulti/trainall' --out-dir '/data/cmpe249-f20/WaymoKittitMulti/trainall' --creategtdb_only mywaymo
+2021-03-23 10:46:45.318718: I tensorflow/stream_executor/platform/default/dso_loader.cc:48] Successfully opened dynamic library libcudart.so.10.1
+Dataset: mywaymo
+Create GT Database of MyWaymoKittiDataset
+Used classes: ['Pedestrian', 'Cyclist', 'Car', 'Sign']
+Init Kitti Dataset:, self.root_split: /data/cmpe249-f20/WaymoKittitMulti/trainall/training
+Kitti Classes:: None
+Init MyWaymoKitti Dataset:, data_root: /data/cmpe249-f20/WaymoKittitMulti/trainall
+MyWaymoKitti Classes: ('Car', 'Cyclist', 'Pedestrian', 'Sign')
+MyWaymoKitti input classes: None
+[>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>] 140394/140394, 2.6 task/s, elapsed: 53492s, ETA:     0s
+load 3892143 Car database infos
+load 1804541 Pedestrian database infos
+load 40926 Cyclist database infos
+
+(venvpy37cu10) [010796032@g5 mymmdetection3d]$ ls /data/cmpe249-f20/WaymoKittitMulti/trainall
+ImageSets  waymo_dbinfos_train.pkl  waymo_infos_train.pkl     waymo_infos_val.pkl
+training   waymo_gt_database        waymo_infos_trainval.pkl
 ```
-![image](https://user-images.githubusercontent.com/6676586/111931299-2cf69c00-8a78-11eb-91f8-1ae24e76dbb4.png)
 
 Start the training:
 ```bash
