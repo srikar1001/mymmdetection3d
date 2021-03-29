@@ -6,7 +6,7 @@ _base_ = [
 
 point_cloud_range = [0, -39.68, -3, 69.12, 39.68, 1]
 # dataset settings
-data_root = '/data/cmpe249-f20/WaymoKittitMulti/train0001/'#'data/kitti/'
+data_root = '/data/cmpe249-f20/WaymoKittitMulti/4c_train5678/'#'data/kitti/'
 class_names = ['Pedestrian', 'Cyclist', 'Car', 'Sign']
 # PointPillars adopted a different sampling strategies among classes
 db_sampler = dict(
@@ -15,9 +15,9 @@ db_sampler = dict(
     rate=1.0,
     prepare=dict(
         filter_by_difficulty=[-1],
-        filter_by_min_points=dict(Car=5, Pedestrian=10, Cyclist=10,  Sign=10)),
+        filter_by_min_points=dict(Car=5, Pedestrian=10, Cyclist=10,  Sign=0)),
     classes=class_names,
-    sample_groups=dict(Car=15, Pedestrian=10, Cyclist=10,  Sign=10))
+    sample_groups=dict(Car=15, Pedestrian=10, Cyclist=10,  Sign=0))
 
 # PointPillars uses different augmentation hyper parameters
 train_pipeline = [

@@ -1,6 +1,6 @@
 # dataset settings
 dataset_type = 'KittiDataset'
-data_root = '/data/cmpe249-f20/WaymoKittitMulti/trainall/'#'data/kitti/'
+data_root = '/data/cmpe249-f20/WaymoKittitMulti/4c_train5678/'#'data/kitti/'
 class_names = ['Pedestrian', 'Cyclist', 'Car', 'Sign']
 point_cloud_range = [0, -40, -3, 70.4, 40, 1]
 input_modality = dict(use_lidar=True, use_camera=False)
@@ -81,8 +81,8 @@ test_pipeline = [
 ]
 
 data = dict(
-    samples_per_gpu=6, #4, #6,  batch size
-    workers_per_gpu=8, #2, #4, cpu processing core
+    samples_per_gpu=8, #12, #8, #6, #4, #6,  batch size
+    workers_per_gpu=16, #8, #2, #4, cpu processing core
     train=dict(
         type='RepeatDataset',
         times=2,

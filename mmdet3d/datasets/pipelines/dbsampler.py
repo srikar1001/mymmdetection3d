@@ -120,7 +120,7 @@ class DataBaseSampler(object):
         logger = get_root_logger()
         for k, v in db_infos.items():
             logger.info(f'load {len(v)} {k} database infos')
-        for prep_func, val in prepare.items():
+        for prep_func, val in prepare.items(): 
             db_infos = getattr(self, prep_func)(db_infos, val)
         logger.info('After filter database:')
         for k, v in db_infos.items():
@@ -177,6 +177,10 @@ class DataBaseSampler(object):
         Returns:
             dict: Info of database after filtering.
         """
+        print("LKK: in filter_by_min_points:", min_gt_points_dict)
+        for key, value in db_infos.items() :
+            #print (key, value)
+            print("LKK: db_infos", key)
         for name, min_num in min_gt_points_dict.items():
             min_num = int(min_num)
             if min_num > 0:

@@ -6,7 +6,7 @@ _base_ = [
 
 point_cloud_range = [0, -39.68, -3, 69.12, 39.68, 1]
 # dataset settings
-data_root = '/data/cmpe249-f20/WaymoKittitMulti/train0001/'#'data/kitti/'
+data_root = '/data/cmpe249-f20/WaymoKittitMulti/trainall/'#train0001/'#'data/kitti/'
 class_names = ['Pedestrian', 'Cyclist', 'Car']
 # PointPillars adopted a different sampling strategies among classes
 db_sampler = dict(
@@ -83,4 +83,4 @@ evaluation = dict(interval=2)
 # PointPillars usually need longer schedule than second, we simply double
 # the training schedule. Do remind that since we use RepeatDataset and
 # repeat factor is 2, so we actually train 160 epochs.
-total_epochs = 80
+total_epochs = 120 #80
