@@ -254,7 +254,9 @@ class MyWaymoKittiDataset(KittiDataset):
         Returns:
             dict[str: float]: results of each evaluation metric
         """
+        print("Input evaluation metric:", metric)
         metric='kitti' #LKK add
+        print("Using evaluation metric:", metric)
         assert ('waymo' in metric or 'kitti' in metric), \
             f'invalid metric {metric}'
         if 'kitti' in metric:
