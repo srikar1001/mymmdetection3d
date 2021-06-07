@@ -18,7 +18,7 @@ info['image']=image_info
 * image_info['image_path']
 * image_info['image_shape']
 * image_info['image_idx']: idx
-info['point_cloud'] = pc_info
+* info['point_cloud'] = pc_info
 * pc_info['velodyne_path']
 * pc_info['num_features']= 4
 info['calib'] = calib_info (actual calibration data)
