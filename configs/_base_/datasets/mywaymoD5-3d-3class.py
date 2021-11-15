@@ -2,7 +2,7 @@
 # D5 in the config name means the whole dataset is divided into 5 folds
 # We only use one fold for efficient experiments
 dataset_type = 'MyWaymoKittiDataset'#'WaymoDataset' #'KittiDataset' #'WaymoDataset'
-data_root = '/data/cmpe249-f20/WaymoKittitMulti/4c_train5678/'
+data_root = '/data/cmpe249-fa21/4c_train5678/'
 file_client_args = dict(backend='disk')
 # Uncomment the following if use ceph or other file clients.
 # See https://mmcv.readthedocs.io/en/latest/api.html#mmcv.fileio.FileClient

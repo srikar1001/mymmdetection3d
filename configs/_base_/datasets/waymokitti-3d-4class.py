@@ -1,6 +1,6 @@
 # dataset settings
 dataset_type = 'KittiDataset'
-data_root = '/data/cmpe249-f20/WaymoKittitMulti/4c_train5678/'#'data/kitti/'
+data_root = '/data/cmpe249-fa21/4c_train5678/'#'data/kitti/'
 class_names = ['Pedestrian', 'Cyclist', 'Car', 'Sign']
 point_cloud_range = [0, -40, -3, 70.4, 40, 1]
 input_modality = dict(use_lidar=True, use_camera=False)
