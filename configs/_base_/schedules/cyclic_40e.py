@@ -28,4 +28,5 @@ momentum_config = dict(
 # Although the total_epochs is 40, this schedule is usually used we
 # RepeatDataset with repeat ratio N, thus the actual total epoch
 # number could be Nx40
+runner = dict(type='EpochBasedRunner',max_epochs=120)
 total_epochs = 40

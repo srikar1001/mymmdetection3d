@@ -29,11 +29,11 @@ train_cfg = dict(
 
 # dataset settings
 dataset_type = 'KittiDataset'
-data_root = '/data/cmpe295-liu/kitti/' #'data/kitti/'
+data_root = '/data/cmpe249-fa21/4c_train5678/' #'data/kitti/'
 class_names = ['Car']
 db_sampler = dict(
     data_root=data_root,
-    info_path=data_root + 'kitti_dbinfos_train.pkl',
+    info_path=data_root + 'waymo_dbinfos_train.pkl',
     rate=1.0,
     prepare=dict(filter_by_difficulty=[-1], filter_by_min_points=dict(Car=5)),
     sample_groups=dict(Car=15),
